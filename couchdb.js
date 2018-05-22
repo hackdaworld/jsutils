@@ -53,7 +53,11 @@ var couchdb = {
 			url: url,
 			type: type,
 			success: function(ret) {
-				var ro=JSON.parse(ret);
+				var ro=ret;
+				if(typeof ret === "string") {
+					cl("couchdb: xhr return string parsed");
+					ro=JSON.parse(ret);
+				}
 				if('error' in ro) {
 					switch(ro.error) {
 						case "file_exists":
@@ -83,8 +87,15 @@ var couchdb = {
 				cb();
 			}
 		};
-		if((data!==undefined)&&(data!==null))
-			ao.data=JSON.stringify(data);
+		if((data!==undefined)&&(data!==null)) {
+			if(typeof data != "string") {
+				cl("couchdb: xhr data stringified");
+				ao.data=JSON.stringify(data);
+			}
+			else {
+				ao.data=data;
+			}
+		}
 		// headers
 		if(couchdb.headers!==null) {
 			ao.headers=couchdb.headers;
