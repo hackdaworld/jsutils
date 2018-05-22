@@ -227,16 +227,16 @@ var idb = {
 			}
 			else {
 				// get items in range
-				kr=IDBKeyRange.bound(low,up,true,true);
+				kr=IDBKeyRange.bound(low,up,false,false);
 			}
 		}
 		else if (low!==undefined) {
 			// get items from low to current
-			kr=IDBKeyRange.lowerBound(low,true);
+			kr=IDBKeyRange.lowerBound(low,false);
 		}
 		else if (up!==undefined) {
 			// get items from first to up
-			kr=IDBKeyRange.upperBound(up,true);
+			kr=IDBKeyRange.upperBound(up,false);
 		}
 		// overwrite reverse
 		if(rev!==undefined)
