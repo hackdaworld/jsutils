@@ -77,7 +77,7 @@ var couchdb = {
 					cb(ro);
 			},
 			error: function(xhr,stat,err) {
-				cl("conn: "+url+", error: "+err+
+				cl("couchdb conn: "+url+", error: "+err+
 				   ", stat: "+stat);
 				cl("executing callback anyways ...");
 				cb();
@@ -89,6 +89,7 @@ var couchdb = {
 		if(couchdb.headers!==null) {
 			ao.headers=couchdb.headers;
 			/*
+			cl(couchdb.headers);
 			ao.beforeSend=function(req) {
 				for(var k in couchdb.headers) {
 					var hval=couchdb.headers[k];
@@ -115,6 +116,10 @@ var couchdb = {
 			callback(ret);
 		});
 	},
+	get_view_key: function(db,view,viewdetail,key,callback) {
+		var raw="/_design/"+view+"/_view/"+viewdetail+'?key="'+key+'"';
+		couchdb.get_raw(db,raw,callback);
+	},
 	get_item: function(db,key,callback) {
 		var url=couchdb.type+"://"+couchdb.host+":"+couchdb.port+"/"+
 		        couchdb.prefix+db+"/"+key;
@@ -131,14 +136,37 @@ var couchdb = {
 	},
 	add_item: function(db,key,data,callback) {
 		var url=couchdb.type+"://"+couchdb.host+":"+couchdb.port+"/"+
-		        couchdb.prefix+db+"/"+k;
+		        couchdb.prefix+db+"/"+key;
 		couchdb.cdb_xhr('PUT',url,data,function(ret) {
 			callback(ret);
 		});
 	},
+	get_uuid_server: function(callback) {
+		var url=couchdb.type+"://"+couchdb.host+":"+couchdb.port+"/"+
+		        "_uuids";
+		couchdb.cdb_xhr('GET',url,null,function(ret) {
+			callback(ret.uuids[0]);
+		});
+
+	},
+	get_uuid_soft: function(callback) {
+		function s4() {
+			var help=Math.floor((1 + Math.random()) * 0x10000);
+			return help.toString(16).substring(1);
+		}
+		callback(s4()+s4()+s4()+s4()+s4()+s4()+s4()+s4());
+	},
+	add_item_random_uuid: function(db,data,callback) {
+		couchdb.get_uuid_soft(function(uuid) {
+			couchdb.add_item(db,uuid,data,function(ret) {
+				cl("couchdb: created doc with random uuid: "+
+				   uuid);
+				callback(ret);
+			});
+		});
+	},
 	update_item: function(db,key,data,callback) {
 		couchdb.get_item(db,key,function(ret) {
-			cl(ret);
 			var mod=false;
 			for(var k in data) {
 				if((ret[k]===undefined)||

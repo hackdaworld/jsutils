@@ -158,3 +158,40 @@ function disable_sel_from_html_string(str,sel) {
 	return wrapped.html();
 }
 
+function str_to_ms(str) {
+	var units = {
+		ms: 1,
+		milli: 1,
+		millis: 1,
+		millisecond: 1,
+		milliseconds: 1,
+		s: 1000,
+		second: 1000,
+		seconds: 1000,
+		m: 60*1000,
+		min: 60*1000,
+		mins: 60*1000,
+		minute: 60*1000,
+		minutes: 60*1000,
+		h: 60*60*1000,
+		hr: 60*60*1000,
+		hrs: 60*60*1000,
+		hour: 60*60*1000,
+		hours: 60*60*1000,
+		d: 60*60*24*1000,
+		day: 60*60*24*1000,
+		days: 60*60*24*1000,
+		w: 60*60*24*1000*7,
+		week: 60*60*24*1000*7,
+		weeks: 60*60*24*1000*7
+	};
+	var millis = 0;
+	str.replace(/(\d+(?:\.\d*)?)\s*([a-z]+)?/ig,function($0,number,unit) {
+		if(unit) {
+			number*=units[unit.toLowerCase()] || 1;
+		}
+		millis += +number;
+	});
+	return millis;
+};
+
