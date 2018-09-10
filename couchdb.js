@@ -28,8 +28,11 @@ var couchdb = {
 	type: "http",
 	host: "cdbsrv",
 	prefix: "",
+	user: "",
+	password: "",
+	auth: "basic", // cookie, proxy
 	headers: null,
-	init: function(type,host,port,prefix) {
+	init: function(type,host,port,prefix,user,password,auth) {
 		if(type!==undefined)
 			couchdb.type=type;
 		if(host!==undefined)
@@ -44,11 +47,22 @@ var couchdb = {
 		}
 		if(prefix!==undefined)
 			couchdb.prefix=prefix;
+		if(user!==undefined)
+			couchdb.user=user;
+		if(password!==undefined)
+			couchdb.password=password;
+		if(auth!==undefined)
+			couchdb.auth=auth;
 	},
 	set_headers: function(hdrs) {
 		couchdb.headers=hdrs;
 	},
-	cdb_xhr: function(type,url,data,cb) {
+	set_auth: function(method,user,password) {
+		couchdb.user=user;
+		couchdb.password=password;
+		couchdb.method=method;
+	},
+	cdb_xhr: function(type,url,data,cb,cberr) {
 		var ao={
 			url: url,
 			type: type,
@@ -81,10 +95,16 @@ var couchdb = {
 					cb(ro);
 			},
 			error: function(xhr,stat,err) {
-				cl("couchdb conn: "+url+", error: "+err+
-				   ", stat: "+stat);
-				cl("executing callback anyways ...");
-				cb();
+				cl("couchdb: xhr error - url: "+url+
+				   ", error: "+err+", stat: "+stat);
+				if((cberr!==undefined)&&(cberr!==null)) {
+					cberr(xhr,stat,err);
+				}
+				else {
+					cl("no error callback defined, "+
+					   "executing 'normal' callback ...");
+					cb();
+				}
 			}
 		};
 		if((data!==undefined)&&(data!==null)) {
@@ -110,6 +130,18 @@ var couchdb = {
 				}
 			}
 			*/
+		}
+		// auth
+		if(couchdb.user!=="") {
+			// so far, only basic auth supported
+			cl("couchdb: authentication as "+couchdb.user);
+			ao.beforeSend=function(xhr) {
+				xhr.setRequestHeader(
+					"Authorization",
+					"Basic "+btoa(couchdb.user+":"+
+					couchdb.password)
+				);
+			}
 		}
 		$.ajax(ao);
 	},
