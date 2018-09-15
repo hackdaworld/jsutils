@@ -181,6 +181,13 @@ var idb = {
 						notreq=false;
 					}
 				}
+				for(var k in nitem) {
+					if(!(k in oitem)) {
+						oitem[k]=nitem[k];
+						cl("idb: added "+k);
+						notreq=false;
+					}
+				}
 				if(notreq) {
 					return;
 				}
